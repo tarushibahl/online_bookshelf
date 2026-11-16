@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Online Bookshelf</title>
+<style>
+:root{--bg:#f0eee6;--fg:#1c1a17;--mut:#7a766d;--line:#dcd8cc;--acc:#e0684f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+.wrap{max-width:1100px;margin:0 auto;padding:18px 16px 50px}
+.top{display:flex;justify-content:space-between;align-items:center}
+.logo{font-weight:700}.logo:before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--acc);margin-right:6px}
+.seg{display:flex;flex-wrap:wrap;justify-content:flex-end;background:#fff;border-radius:30px;padding:3px}
+.seg button{border:0;background:none;border-radius:30px;padding:6px 14px;cursor:pointer;font:inherit}
+.seg button.on{background:var(--fg);color:#fff}
+.hero{text-align:center;padding:20px 0 14px}
+.pill{display:inline-block;background:#f6d9c7;border-radius:20px;padding:3px 12px;font-size:12px}
+h1{font-size:clamp(34px,7vw,60px);line-height:1.05;margin:12px 0 6px;letter-spacing:-.03em}
+h1 i{font-family:Georgia,serif;font-weight:400}
+.sub{color:var(--mut);margin:0 auto 14px;max-width:420px}
+.acts{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:12px}
+button,select,input{font:inherit}
+.b{border:1px solid var(--line);background:#fff;border-radius:30px;padding:8px 16px;cursor:pointer}
+.b.pri{background:var(--acc);border-color:var(--acc);color:#fff}.b.dk{background:var(--fg);border-color:var(--fg);color:#fff}
+.b:disabled{opacity:.5}
+.bar{display:flex;gap:8px;background:#fff;border-radius:30px;padding:6px 6px 6px 16px;max-width:620px;margin:0 auto 8px}
+.bar input{flex:1;border:0;outline:0;background:none;min-width:0}
+.bar select{border:0;background:none;color:var(--mut)}
+.msg{text-align:center;color:var(--mut);min-height:22px;font-size:13px}
+.filters{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:10px 0}
+.filters select,.filters input{border:1px solid var(--line);border-radius:10px;padding:6px 10px;background:#fff}
+.main{display:grid;grid-template-columns:1fr 210px;gap:16px;align-items:start}
+@media(max-width:760px){.main{grid-template-columns:1fr}}
+.shelf{background:linear-gradient(#4b2f1e,#2c1a10);border:6px solid #5b3a25;border-radius:14px;padding:16px 14px 0;overflow:hidden}
+.srow{display:flex;align-items:flex-end;gap:4px;height:240px;padding-top:12px}
+.plank{height:18px;margin:0 -14px;background:linear-gradient(#80563a,#4b2f1e);position:relative;text-align:center}
+.plank span{position:relative;top:-9px;background:linear-gradient(#e2c27a,#b8923f);color:#4b2f1e;font:700 10px/1 system-ui;letter-spacing:.1em;padding:4px 10px;border-radius:3px}
+.spine{flex:none;width:var(--w);height:var(--h);background:var(--c);color:var(--t);border:0;border-radius:3px 3px 0 0;writing-mode:vertical-rl;padding:10px 0;font:700 11px/1 system-ui;letter-spacing:.06em;text-transform:uppercase;overflow:hidden;cursor:pointer;
+box-shadow:inset -4px 0 7px rgba(0,0,0,.3),inset 2px 0 3px rgba(255,255,255,.2);transition:transform .15s}
+.spine:hover,.spine.pick{transform:translateY(-10px)}
+.side{background:linear-gradient(#3d2416,#241409);border-radius:14px;color:#fff;padding:14px 12px;border:4px solid #4b2f1e}
+.side .tag{display:inline-block;background:linear-gradient(#e2c27a,#b8923f);color:#4b2f1e;font:700 10px system-ui;padding:3px 8px;border-radius:3px;letter-spacing:.1em}
+.big{font-size:40px;font-weight:800;line-height:1.1;margin-top:6px}.big small{font:italic 400 16px Georgia,serif;opacity:.8}
+.pile{margin-top:12px;max-height:380px;overflow-y:auto;display:flex;flex-direction:column;align-items:center;gap:3px}
+.slab{width:var(--w);flex:none;height:24px;background:var(--c);color:var(--t);border:0;border-radius:4px;font:700 10px system-ui;padding:0 8px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;cursor:pointer;box-shadow:0 2px 3px rgba(0,0,0,.4)}
+.hint{font:italic 12px Georgia,serif;opacity:.6;text-align:center;margin-top:8px}
+body.film .shelf,body.film .side{background:linear-gradient(#6e1019,#3d070d);border-color:#85202b}
+body.film .plank{background:linear-gradient(#8a1c28,#4a0a12)}
+.ov[hidden]{display:none}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:16px;z-index:9}
+.modal{background:#faf8f3;border-radius:18px;padding:22px;max-width:520px;width:100%;max-height:90vh;overflow:auto;position:relative}
+.modal h2{margin:4px 0;font-size:28px;letter-spacing:-.02em}
+.meta{color:var(--mut);font-size:13px}
+.chip{display:inline-block;background:#efece2;border-radius:20px;padding:2px 10px;font-size:12px;margin:6px 6px 0 0}
+.sw{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}.sw i{width:22px;height:22px;border-radius:50%;cursor:pointer;border:2px solid #fff;box-shadow:0 0 0 1px var(--line)}
+.modal textarea,.modal select{width:100%;border:1px solid var(--line);border-radius:10px;padding:8px;margin-top:6px;font:inherit;background:#fff}
+.modal input.ed{width:100%;border:1px solid var(--line);border-radius:10px;padding:8px;margin:4px 0 8px;font:inherit;background:#fff}
+.x{position:absolute;top:12px;right:12px}
+.marq{display:flex;justify-content:center;align-items:center;gap:14px;margin-bottom:14px}
+.sign{font:900 clamp(18px,4vw,28px)/1 Impact,"Arial Narrow",system-ui,sans-serif;letter-spacing:.12em;color:#ffd54a;text-shadow:0 0 12px #ffb300;background:#240308;border:3px dotted #ffd54a;padding:8px 18px;border-radius:6px}
+.tickets{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;max-height:520px;overflow-y:auto;padding:6px 4px 14px}
+.ticket{display:flex;min-height:86px;background:#f4e8c8;color:#2a1a10;border:0;border-radius:6px;text-align:left;cursor:pointer;padding:0;position:relative;box-shadow:0 3px 6px rgba(0,0,0,.4);transition:transform .15s}
+.ticket:hover,.ticket.pick{transform:translateY(-3px)}.ticket.pick{outline:3px solid #ffd54a}
+.tk-m{flex:1;padding:10px 12px;min-width:0}.tk-k{font:700 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.14em;color:#a3322a}
+.tk-t{font:800 15px/1.15 Impact,"Arial Narrow",system-ui,sans-serif;text-transform:uppercase;margin:6px 0;letter-spacing:.02em}.tk-s2{font-size:11px;color:#7a6a58}
+.tk-b{width:34px;flex:none;background:var(--c);color:var(--t);border-left:2px dashed rgba(0,0,0,.35);writing-mode:vertical-rl;text-align:center;font:700 9px/34px system-ui;letter-spacing:.12em;text-transform:uppercase;overflow:hidden;white-space:nowrap;position:relative;border-radius:0 6px 6px 0}
+.tk-b:before,.tk-b:after{content:"";position:absolute;left:-8px;width:14px;height:14px;border-radius:50%;background:#4a0a12}.tk-b:before{top:-7px}.tk-b:after{bottom:-7px}
+body.film .shelf{padding-bottom:12px}
+.rowc{display:flex;gap:8px;align-items:center;padding:3px 0;font-size:14px}.rowc small{color:var(--mut);margin-left:auto}
+.empty{color:#e9d9c8;opacity:.7;padding:20px;align-self:center;white-space:nowrap}
+</style></head><body>
+<div class="wrap">
+ <div class="top"><span class="logo">shelf</span><div class="seg" id="seg"></div></div>
+ <div class="hero">
+  <span class="pill" id="counts"></span>
+  <h1 id="h1">The Online<i>Bookshelf</i></h1>
+  <p class="sub" id="sub">Everything you mean to read, kept in one calm place. Leave yourself a note when you finish.</p>
+  <div class="acts"><button class="b pri" id="addFocus">Add a book</button><button class="b dk" id="surpBtn">Surprise me</button><button class="b" id="pasteBtn">Paste a list</button><button class="b" id="expBtn">Export backup</button><button class="b" id="impBtn">Import backup</button><button class="b" id="fillBtn">Fill missing details</button><input type="file" id="impFile" accept=".json" hidden></div>
+  <div class="bar"><input id="addIn" placeholder="Type a title to add it to your library…"><button class="b dk" id="addBtn">Add</button></div>
+  <div class="msg" id="msg"></div>
+  <div class="filters"><input id="fq" placeholder="Search your library"><select id="fCat"></select><select id="fGen"></select><select id="fRate"><option value="0">Any rating</option><option value="6">6+</option><option value="7">7+</option><option value="8">8+</option></select><select id="fTime"><option value="">Any length</option><option value="short">Short (under 1h)</option><option value="night">Movie night (1 to 3h)</option><option value="day">Done in a day (3 to 12h)</option><option value="weeks">A few weeks (12 to 45h)</option><option value="long">Long commitment (45h+)</option></select></div>
+ </div>
+ <div class="main">
+  <div class="shelf"><div id="books"></div></div>
+  <div class="side"><span class="tag" id="sideTag">READ</span><div class="big"><span id="doneN">0</span> <small id="doneW">books read</small></div><div class="pile" id="pile"></div><div class="hint">tap one to read your note</div></div>
+ </div>
+</div>
+<div id="ov" class="ov" hidden></div>
+<script>
+const KEY="myLibrary.v1",PAL=["#f2c94c","#f2a0b5","#e04f6e","#c8642a","#e8742a","#2aa5b0","#3d6fb5","#274b8a","#2f5a3a","#6a4fb5","#e9e6dc","#1d1d1d","#9db7c9","#0f3b3a","#f4b59a","#7b1f2e"];
+let items=[],type="book";
+const $=id=>document.getElementById(id),el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
+try{items=JSON.parse(localStorage.getItem(KEY)||"[]")}catch(e){}
+items.forEach(i=>{if(i.type==="film")i.type=i.category==="Series"?"series":"movie"});
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(items))}catch(e){}};
+const hash=s=>[...s].reduce((a,c)=>(a*31+c.charCodeAt(0))>>>0,7);
+const txt=c=>{const n=parseInt(c.slice(1),16),l=(.3*(n>>16)+.6*(n>>8&255)+.1*(n&255));return l>150?"#1c1a17":"#fff"};
+const col=i=>i.color||PAL[hash(i.title)%PAL.length];
+const TYPES={
+book:{tab:"Books",h:"The Online<i>Bookshelf</i>",sub:"Everything you mean to read, kept in one calm place. Leave yourself a note when you finish.",add:"Add a book",cat:"Book",w:["read","books read","To read","book"]},
+movie:{tab:"Movies",h:"The Online<i>Cinema</i>",sub:"Every film you mean to watch, in one cosy screening room.",add:"Add a movie",cat:"Movie",w:["watched","movies watched","To watch","movie"]},
+series:{tab:"Series & Sitcoms",h:"The Online<i>Watchlist</i>",sub:"Series and sitcoms to binge, kept in one place.",add:"Add a series",cat:"Series",w:["watched","shows watched","To watch","show"]},
+kdrama:{tab:"K-Dramas",h:"The Online<i>K-Drama Club</i>",sub:"Every Korean drama you mean to watch.",add:"Add a K-drama",cat:"K-Drama",w:["watched","dramas watched","To watch","drama"]},
+cdrama:{tab:"C-Dramas",h:"The Online<i>C-Drama Club</i>",sub:"Every Chinese drama you mean to watch.",add:"Add a C-drama",cat:"C-Drama",w:["watched","dramas watched","To watch","drama"]}};
+const word=()=>TYPES[type].w;
+
+function setType(t){type=t;const T=TYPES[t];document.body.classList.toggle("film",t!=="book");
+ document.querySelectorAll("#seg button").forEach(b=>b.classList.toggle("on",b.dataset.t===t));
+ $("h1").innerHTML=T.h;$("sub").textContent=T.sub;$("addFocus").textContent=T.add;
+ $("sideTag").textContent=t==="book"?"READ":"WATCHED";
+ $("msg").textContent="";$("fq").value="";$("fTime").value="";render()}
+Object.keys(TYPES).forEach(k=>{const b=el("button","",TYPES[k].tab);b.dataset.t=k;b.onclick=()=>setType(k);$("seg").appendChild(b)});
+$("addFocus").onclick=()=>$("addIn").focus();
+["fq","fCat","fGen","fRate","fTime"].forEach(i=>$(i).oninput=render);
+
+function fill(id,label,vals){const s=$(id),c=s.value;s.innerHTML="";s.appendChild(new Option(label,""));[...new Set(vals.filter(Boolean))].sort().forEach(v=>s.appendChild(new Option(v,v)));s.value=c}
+function sty(n,i,wmin,wr,hmin,hr){const h=hash(i.title),c=col(i);n.style.setProperty("--c",c);n.style.setProperty("--t",txt(c));
+ if(wr!=null){n.style.setProperty("--w",wmin+h%wr+(hmin?"px":"%"));if(hmin)n.style.setProperty("--h",hmin+(h>>3)%hr+"px")}}
+
+function cinema(B,w,W){
+ const h=el("div","marq");h.innerHTML='<svg width="40" height="50" viewBox="0 0 44 54"><g fill="#fff6dc"><circle cx="12" cy="13" r="8"/><circle cx="24" cy="8" r="9"/><circle cx="34" cy="14" r="8"/><circle cx="19" cy="19" r="8"/><circle cx="30" cy="21" r="7"/></g><path d="M6 24h32l-4 28H10z" fill="#fff"/><path d="M11 24h6l1 28h-5zM24 24h6l-1 28h-5z" fill="#d7263d"/></svg><span class="sign">NOW SHOWING</span><svg width="40" height="50" viewBox="0 0 44 54"><g fill="#fff6dc"><circle cx="12" cy="13" r="8"/><circle cx="24" cy="8" r="9"/><circle cx="34" cy="14" r="8"/><circle cx="19" cy="19" r="8"/><circle cx="30" cy="21" r="7"/></g><path d="M6 24h32l-4 28H10z" fill="#fff"/><path d="M11 24h6l1 28h-5zM24 24h6l-1 28h-5z" fill="#d7263d"/></svg>';B.appendChild(h);
+ const g=el("div","tickets");B.appendChild(g);
+ if(!w.length)g.appendChild(el("div","empty","Nothing showing yet. Add a "+W[3]+" above."));
+ w.forEach(i=>{const t=el("button","ticket"),m=el("div","tk-m");t.dataset.id=i.id;sty(t,i);
+  m.appendChild(el("div","tk-k",(TYPES[type].cat+(i.year?" · "+i.year:"")).toUpperCase()));
+  m.appendChild(el("div","tk-t",i.title));
+  m.appendChild(el("div","tk-s2",[i.length,i.creator].filter(Boolean).join(" · ")));
+  t.appendChild(m);t.appendChild(el("div","tk-b",i.genre||TYPES[type].cat));
+  t.onclick=()=>openM(i.id);g.appendChild(t)})}
+
+function render(){
+ const all=items.filter(i=>i.type===type);
+ fill("fCat","All categories",all.map(i=>i.category));fill("fGen","All genres",all.map(i=>i.genre));
+ const q=$("fq").value.toLowerCase(),c=$("fCat").value,g=$("fGen").value,r=+$("fRate").value,tf=$("fTime").value;
+ const list=all.filter(i=>(!c||i.category===c)&&(!g||i.genre===g)&&(!r||i.rating>=r)&&(!tf||bucket(i)===tf)&&(!q||[i.title,i.creator,i.genre,i.summary].join(" ").toLowerCase().includes(q)));
+ const w=list.filter(i=>!i.done),d=list.filter(i=>i.done),W=word();
+ $("counts").textContent=all.filter(i=>!i.done).length+" waiting · "+all.filter(i=>i.done).length+" "+W[0];
+ $("doneN").textContent=all.filter(i=>i.done).length;$("doneW").textContent=all.filter(i=>i.done).length===1?W[1].replace("books","book"):W[1];
+	const B=$("books");B.innerHTML="";
+ if(type!=="book"){cinema(B,w,W)}else{
+ const avail=(B.clientWidth||700)-4;let row=null,used=0;
+ const newRow=()=>{row=el("div","srow");B.appendChild(row);used=0};
+ const plank=last=>{const p=el("div","plank");if(last)p.appendChild(el("span","",word()[2].toUpperCase()));B.appendChild(p)};
+ newRow();
+ if(!w.length)row.appendChild(el("div","empty","Nothing on the shelf yet. Add a "+W[3]+" above."));
+ w.forEach(i=>{const wd=26+hash(i.title)%16;
+  if(used+wd+4>avail&&used>0){plank(false);newRow()}
+  const s=el("button","spine",i.title);s.dataset.id=i.id;sty(s,i,26,16,150,80);s.onclick=()=>openM(i.id);row.appendChild(s);used+=wd+4});
+ plank(true)}
+ const P=$("pile");P.innerHTML="";
+ d.slice().reverse().forEach(i=>{const s=el("button","slab",i.title);sty(s,i,70,30);s.onclick=()=>openM(i.id);P.appendChild(s)})}
+
+function openM(id){
+ const it=items.find(i=>i.id===id);if(!it)return;
+ const ov=$("ov");ov.hidden=false;ov.innerHTML="";
+ const m=el("div","modal");ov.appendChild(m);ov.onclick=e=>{if(e.target===ov)ov.hidden=true};
+ const x=el("button","b x","Close");x.onclick=()=>ov.hidden=true;m.appendChild(x);
+ m.appendChild(el("div","meta",[it.category,it.genre].filter(Boolean).join(" · ")));
+ m.appendChild(el("h2","",it.title));
+ m.appendChild(el("div","meta",it.creator?"by "+it.creator:""));
+ const ch=el("div");[it.length&&"Length "+it.length,it.year&&"Year "+it.year,it.rating&&"Rated "+it.rating+"/10",minsOf(it)&&"About "+fmt(minsOf(it))].filter(Boolean).forEach(t=>ch.appendChild(el("span","chip",t)));m.appendChild(ch);
+ if(it.summary){const p=el("p","",it.summary);p.style.margin="12px 0";m.appendChild(p)}
+ if(it.done){const n=it.note||{},has=n.thoughts||n.takeaways||n.stars;
+  if(has){m.appendChild(el("p","",(n.stars?"★".repeat(n.stars)+" ":"")+(n.thoughts||"")));if(n.takeaways)m.appendChild(el("p","meta","Takeaways: "+n.takeaways))}
+  const nb=el("button","b",has?"Edit note":"Add a note");nb.onclick=()=>noteForm(it,m,nb);m.appendChild(nb)}
+ else{const f=el("button","b pri",type==="book"?"I finished this":"I watched this");f.onclick=()=>noteForm(it,m,f);m.appendChild(f)}
+ m.appendChild(el("div","meta colh","Colour"));
+ const sw=el("div","sw");PAL.forEach(c=>{const d=el("i");d.style.background=c;d.onclick=()=>{it.color=c;it.fromCover=false;save();render()};sw.appendChild(d)});m.appendChild(sw);
+ if(it.done){const un=el("button","b",type==="book"?"Move back to to-read":"Move back to wishlist");un.style.marginRight="8px";un.onclick=()=>{it.done=false;it.note=null;save();ov.hidden=true;render()};m.appendChild(un)}
+ const ed=el("button","b","Edit details");ed.style.marginRight="8px";ed.onclick=()=>editM(it);m.appendChild(ed);
+ const rm=el("button","b","Remove from shelf");rm.onclick=()=>{items=items.filter(i=>i!==it);save();ov.hidden=true;render()};m.appendChild(rm)}
+
+function noteForm(it,m,btn){btn.remove();const n=it.note||{},at=m.querySelector(".colh"),th=el("textarea"),tk=el("textarea"),st=el("select"),sv=el("button","b pri","Save note");
+ th.placeholder="Your thoughts…";th.value=n.thoughts||"";tk.placeholder="Key takeaways…";tk.value=n.takeaways||"";
+ for(let k=0;k<6;k++)st.appendChild(new Option(k?"★".repeat(k):"No stars",k));st.value=n.stars||0;sv.style.margin="8px 0 10px";
+ sv.onclick=()=>{it.done=true;it.note={thoughts:th.value.trim(),takeaways:tk.value.trim(),stars:+st.value};save();$("ov").hidden=true;render()};
+ [th,tk,st,sv].forEach(x=>m.insertBefore(x,at))}
+
+function editM(it){const m=$("ov").querySelector(".modal");m.innerHTML="";m.appendChild(el("h2","","Edit details"));
+ const F=[["title","Title"],["creator","Author / director / network"],["year","Year"],["genre","Genre"],["length","Length"],["rating","Rating (0 to 10)"]],inp={};
+ F.forEach(([k,l])=>{m.appendChild(el("div","meta",l));const i=document.createElement("input");i.className="ed";i.value=it[k]||"";inp[k]=i;m.appendChild(i)});
+ m.appendChild(el("div","meta","Total time in minutes (e.g. 120 for a 2h movie)"));const mi=document.createElement("input");mi.className="ed";mi.type="number";mi.value=minsOf(it)||"";m.appendChild(mi);
+ m.appendChild(el("div","meta","Summary"));const su=el("textarea");su.value=it.summary||"";m.appendChild(su);
+ m.appendChild(el("div","meta","Section"));const se=el("select");Object.keys(TYPES).forEach(k=>se.appendChild(new Option(TYPES[k].tab,k)));se.value=it.type;m.appendChild(se);
+ const sv=el("button","b pri","Save changes"),cn=el("button","b","Cancel");sv.style.cssText="margin:12px 8px 0 0";cn.style.marginTop="12px";
+ cn.onclick=()=>openM(it.id);
+ sv.onclick=()=>{const t=inp.title.value.trim();if(!t)return;F.forEach(([k])=>it[k]=inp[k].value.trim());it.rating=Math.min(10,Math.max(0,+inp.rating.value||0));it.summary=su.value.trim();it.mins=+mi.value||0;it.type=se.value;it.category=TYPES[it.type].cat;save();$("ov").hidden=true;if(it.type!==type)setType(it.type);else render()};
+ m.appendChild(sv);m.appendChild(cn)}
+
+const norm=s=>(s||"").toLowerCase().replace(/[^a-z0-9]/g,"");
+async function olBook(q){const r=await fetch("https://openlibrary.org/search.json?limit=1&fields=title,author_name,first_publish_year,number_of_pages_median,subject,ratings_average,cover_i&q="+encodeURIComponent(q));
+ const d=((await r.json()).docs||[])[0];if(!d)return null;
+ return{title:d.title,creator:(d.author_name||[])[0]||"",year:d.first_publish_year||"",length:d.number_of_pages_median?d.number_of_pages_median+" pages":"",genre:(d.subject||[])[0]||"",category:"Book",cover:d.cover_i?"https://covers.openlibrary.org/b/id/"+d.cover_i+"-M.jpg?default=false":"",mins:d.number_of_pages_median?Math.round(d.number_of_pages_median*1.5):0,rating:d.ratings_average?+(d.ratings_average*2).toFixed(1):0}}
+function minsOf(i){if(i.mins>0)return i.mins;const l=i.length||"";let m=l.match(/(\d+)\s*h(?:\s*(\d+)\s*m)?/);if(m)return +m[1]*60+(+m[2]||0);m=l.match(/(\d+)\s*pages/);return m?Math.round(m[1]*1.5):0}
+const fmt=m=>m<60?m+" min":m<600?Math.floor(m/60)+"h"+(m%60?" "+m%60+"m":""):Math.round(m/60)+"h";
+function bucket(i){const m=minsOf(i);return!m?"":m<=60?"short":m<=200?"night":m<=720?"day":m<=2700?"weeks":"long"}
+function domColor(d){const b={};let ar=0,ag=0,ab=0,n=0;
+ for(let i=0;i<d.length;i+=4){if(d[i+3]<200)continue;const r=d[i],g=d[i+1],l=d[i+2];ar+=r;ag+=g;ab+=l;n++;
+  if(r>215&&g>215&&l>215)continue;if(r<35&&g<35&&l<35)continue;
+  const k=(r>>5)<<6|(g>>5)<<3|(l>>5),e=b[k]||(b[k]={c:0,r:0,g:0,b:0});e.c++;e.r+=r;e.g+=g;e.b+=l}
+ let best=null;for(const k in b)if(!best||b[k].c>best.c)best=b[k];
+ if(!best&&n)best={c:n,r:ar,g:ag,b:ab};if(!best)return null;
+ const h=v=>Math.round(v/best.c).toString(16).padStart(2,"0");return"#"+h(best.r)+h(best.g)+h(best.b)}
+function coverColor(url){return new Promise(res=>{const t=setTimeout(()=>res(null),6000);
+ try{const im=new Image();im.crossOrigin="anonymous";
+  im.onload=()=>{clearTimeout(t);try{const c=document.createElement("canvas");c.width=24;c.height=32;const x=c.getContext("2d");x.drawImage(im,0,0,24,32);res(domColor(x.getImageData(0,0,24,32).data))}catch(e){res(null)}};
+  im.onerror=()=>{clearTimeout(t);res(null)};im.src=url}catch(e){clearTimeout(t);res(null)}})}
+function short(s,n){s=(s||"").trim();if(s.length<=n)return s;const c=s.slice(0,n),i=Math.max(c.lastIndexOf(". "),c.lastIndexOf("! "),c.lastIndexOf("? "));return i>80?c.slice(0,i+1):c.replace(/\s+\S*$/,"")+"…"}
+async function olDesc(q){
+ const d=((await (await fetch("https://openlibrary.org/search.json?limit=1&fields=key&q="+encodeURIComponent(q))).json()).docs||[])[0];if(!d||!d.key)return "";
+ const w=await (await fetch("https://openlibrary.org"+d.key+".json")).json();let t=w.description;if(t&&t.value)t=t.value;
+ return short(String(t||"").split(/\r?\n-{3,}/)[0].replace(/\[([^\]]+)\]\([^)]*\)/g,"$1").replace(/\s+/g," ").trim(),420)}
+async function book(q){let r=null;
+ try{const j=await (await fetch("https://www.googleapis.com/books/v1/volumes?maxResults=1&printType=books&q="+encodeURIComponent(q))).json(),v=j.items&&j.items[0]&&j.items[0].volumeInfo;
+  if(v&&v.title)r={title:v.title,creator:(v.authors||[])[0]||"",year:(v.publishedDate||"").slice(0,4),length:v.pageCount?v.pageCount+" pages":"",genre:(v.categories||[])[0]||"",category:"Book",cover:((v.imageLinks||{}).thumbnail||"").replace("http://","https://"),mins:v.pageCount?Math.round(v.pageCount*1.5):0,rating:v.averageRating?v.averageRating*2:0,summary:short((v.description||"").replace(/<[^>]+>/g," ").replace(/\s+/g," "),420)}}catch(e){}
+ if(!r){try{r=await olBook(q)}catch(e){}}
+ if(r&&!r.summary){try{r.summary=await olDesc(q)}catch(e){}}
+ return r}
+async function tv(q,re){
+ const a=await (await fetch("https://api.tvmaze.com/search/shows?q="+encodeURIComponent(q))).json();if(!a.length)return null;
+ const reg=x=>{const n=x.show.network||x.show.webChannel||{};return(x.show.language||"")+" "+((n.country||{}).name||"")};
+ let hit=re?a.find(x=>re.test(reg(x))):null;
+ if(re&&!hit)return null;hit=hit||a[0];
+ const d=await (await fetch("https://api.tvmaze.com/shows/"+hit.show.id+"?embed=seasons")).json(),ss=(d._embedded&&d._embedded.seasons||[]),n=ss.length,eps=ss.reduce((a,x)=>a+(x.episodeOrder||0),0),rt=d.averageRuntime||d.runtime||45;
+ return{title:d.name,creator:(d.network||d.webChannel||{}).name||"",year:(d.premiered||"").slice(0,4),length:n?n+" season"+(n>1?"s":"")+(eps?" · "+eps+" eps":""):"",mins:eps?eps*rt:0,genre:(d.genres||[])[0]||"",rating:(d.rating||{}).average||0,summary:(d.summary||"").replace(/<[^>]+>/g,"").replace(/\s+/g," ").trim().length?short((d.summary||"").replace(/<[^>]+>/g," ").replace(/\s+/g," "),420):""}}
+async function mov(q){
+ const j=await (await fetch("https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrlimit=1&gsrsearch="+encodeURIComponent(q+" film")+"&prop=extracts|description|pageprops&ppprop=wikibase_item&exintro=1&explaintext=1&exsentences=3&format=json&origin=*")).json();
+ const p=j.query&&Object.values(j.query.pages)[0];if(!p)return null;
+ const d=p.description||"",y=(d.match(/\b(19|20)\d\d\b/)||[])[0]||"",dir=(d.match(/\bby ([^,(]+)/)||[])[1]||"";let mins=0;
+ try{const id=(p.pageprops||{}).wikibase_item;if(id){const w=await (await fetch("https://www.wikidata.org/w/api.php?action=wbgetentities&props=claims&format=json&origin=*&ids="+id)).json(),c=(((w.entities||{})[id]||{}).claims||{}).P2047;
+  if(c&&c[0]){const v=c[0].mainsnak.datavalue.value,a=Math.abs(+v.amount),u=v.unit||"";mins=Math.round(u.endsWith("Q7727")?a:u.endsWith("Q11574")?a/60:u.endsWith("Q25235")?a*60:0)}}}catch(e){}
+ return{title:p.title.replace(/\s*\([^)]*film\)$/,""),creator:dir.trim(),year:y,length:mins?fmt(mins):"",mins,genre:"",rating:0,summary:short(p.extract||d,420)}}
+async function lookup(q,tp){tp=tp||type;
+ try{if(tp==="book")return await book(q);if(tp==="movie")return await mov(q);
+  if(tp==="kdrama")return await tv(q,/Korea/i);if(tp==="cdrama")return await tv(q,/Chinese|Mandarin|China|Taiwan|Hong Kong/i);
+  return await tv(q,null)}catch(e){return null}}
+
+async function add(){const q=$("addIn").value.trim();if(!q)return;
+ $("addBtn").disabled=true;$("msg").textContent="Looking it up…";
+ const f=await lookup(q),it=f||{title:q};let cc=null;if(type==="book"&&it.cover)cc=await coverColor(it.cover);
+ items.push({id:Date.now()+""+Math.random().toString(36).slice(2,5),type,title:it.title,creator:it.creator||"",year:it.year||"",category:TYPES[type].cat,genre:it.genre||"",length:it.length||"",rating:it.rating||0,summary:it.summary||"",mins:it.mins||0,cover:it.cover||"",color:cc||undefined,fromCover:!!cc,done:false,note:null});
+ save();$("addIn").value="";$("addBtn").disabled=false;
+ $("msg").textContent=f?"Added: "+it.title:"Couldn’t find details (are you online?), so I added it as typed. You can recolour it by clicking it.";render()}
+$("addBtn").onclick=add;$("addIn").onkeydown=e=>{if(e.key==="Enter")add()};
+
+$("surpBtn").onclick=()=>{const S=[...document.querySelectorAll(".spine,.ticket")];
+ if(!S.length){$("msg").textContent="Add a few titles first.";return}
+ let n=0;const t=setInterval(()=>{S.forEach(s=>s.classList.remove("pick"));const s=S[Math.floor(Math.random()*S.length)];s.classList.add("pick");s.scrollIntoView({inline:"center",block:"nearest"});
+  if(++n>14){clearInterval(t);setTimeout(()=>openM(s.dataset.id),500)}},110)};
+$("expBtn").onclick=()=>{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(items,null,2)],{type:"application/json"}));a.download="my-library-backup.json";a.click()};
+$("impBtn").onclick=()=>$("impFile").click();
+$("impFile").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
+ r.onload=()=>{try{const d=JSON.parse(r.result);if(!Array.isArray(d))throw 0;const idx=new Map(items.map(i=>[i.type+norm(i.title),i]));let n=0,u=0;
+  d.forEach((x,k)=>{if(!(x&&x.title&&TYPES[x.type]))return;const key=x.type+norm(x.title),ex=idx.get(key);
+   if(ex){if(x.done&&!ex.done){ex.done=true;u++}return}
+   x.id=x.id||"imp"+Date.now()+k;items.push(x);idx.set(key,x);n++});
+  save();render();$("msg").textContent="Imported "+n+" new title"+(n===1?"":"s")+(u?", marked "+u+" as finished":"")+". Already there: "+(d.length-n)+".";}catch(x){$("msg").textContent="That file isn’t a valid backup."}};r.readAsText(f);e.target.value=""};
+
+
+const SM=new Set(["a","an","the","of","in","to","and","for","on","at","by","but","or","with","from","as"]);
+const tc=t=>t.split(" ").map((w,i)=>w!==w.toLowerCase()?w:(i&&SM.has(w)?w:w[0].toUpperCase()+w.slice(1))).join(" ");
+function sim(a,b){a=norm(a);b=norm(b);if(!a||!b)return 0;const m=a.length,n=b.length,d=[];for(let i=0;i<=m;i++)d[i]=[i];for(let j=1;j<=n;j++)d[0][j]=j;
+ for(let i=1;i<=m;i++)for(let j=1;j<=n;j++)d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(a[i-1]===b[j-1]?0:1));return 1-d[m][n]/Math.max(m,n)}
+function parseList(txt,mode){const out=[];let gi=0,cnt=0,pend=false;
+ txt.split("\n").forEach(l=>{const raw=l.trim();if(!raw){if(cnt>=3)pend=true;return}
+  const nm=raw.match(/^\s*(\d+)\s*[.)]/);
+  let t=raw.replace(/^(✓|✔|\[[vVxX]\])\s*/,"").replace(/(✓|✔)\s*$/,"").replace(/^\s*\d+\s*[.)]\s*/,"").replace(/https?:\/\/\S+/g,"").replace(/\([^)]*\)/g,"")
+   .replace(/\s*[-–]\s*(netflix|dramacool|prime|hotstar|disney\+?|viki|youtube|hbo|apple tv\+?)\s*$/i,"").replace(/\s*[-–]\s*[A-Z]{2,5}\s*$/,"").replace(/\s*[-–]\s*\d+\s*$/,"");
+  t=t.replace(/\s+\d(\s*,\s*\d)+\s*&?\s*\d?\s*$/,"").replace(/\s+\d\s*&\s*\d\s*$/,"").replace(/[\s\-–:]+$/,"").replace(/\s+/g," ").trim();
+  let creator="";const am=t.match(/^(.+?)\s*[-–]\s+([A-Z][\w.']+(?:\s+[A-Z][\w.']+)+)$/);if(am){t=am[1].trim();creator=am[2]}
+  if(!/[a-z0-9]/i.test(t)||t.length<2)return;
+  if(cnt>0&&(pend||(nm&&+nm[1]===1&&cnt>=3))){gi++;cnt=0}pend=false;cnt++;
+  const done=mode==="all-done"||(mode==="first"&&gi===0)||(mode==="marks"&&(/^(✓|✔|\[[vVxX]\])/.test(raw)||/(✓|✔)\s*$/.test(raw)));
+  out.push({title:tc(t),creator,done})});return out}
+function pasteUI(){const ov=$("ov");ov.hidden=false;ov.innerHTML="";ov.onclick=e=>{if(e.target===ov)ov.hidden=true};
+ const m=el("div","modal");ov.appendChild(m);m.appendChild(el("h2","","Paste a list"));
+ m.appendChild(el("p","meta","One title per line. Numbers, links and notes in brackets are cleaned up for you, and you can review everything before it is added."));
+ const sec=el("select");Object.keys(TYPES).forEach(k=>sec.appendChild(new Option(TYPES[k].tab,k)));sec.value=type;
+ const mode=el("select");[["todo","Everything is still to read or watch"],["all-done","Everything is already finished"],["first","The first list is finished, the rest are not (lists are separated by blank lines)"],["marks","Lines starting with ✓ or [v] are finished"]].forEach(([v,l])=>mode.appendChild(new Option(l,v)));
+ const ta=el("textarea");ta.style.minHeight="180px";ta.placeholder="Paste your list here…";
+ const go=el("button","b pri","Preview");go.style.marginTop="10px";[sec,mode,ta,go].forEach(x=>m.appendChild(x));
+ go.onclick=()=>pastePreview(m,sec.value,mode.value,ta.value)}
+function pastePreview(m,sec,mode,txt){
+ const seen=new Set(),rows=[];let dup=0,have0=0;
+ parseList(txt,mode).forEach(x=>{const k=norm(x.title);if(seen.has(k)){dup++;return}seen.add(k);
+  x.have=items.find(i=>i.type===sec&&norm(i.title)===k);
+  if(x.have&&!(x.done&&!x.have.done)){have0++;return}rows.push(x)});
+ m.innerHTML="";m.appendChild(el("h2","","Review"));
+ m.appendChild(el("p","meta",rows.length+" to add or update · "+dup+" duplicates removed · "+have0+" already in your library. Untick anything that isn’t a title, such as a heading."));
+ const box=el("div","scroll");box.style.cssText="max-height:300px;overflow-y:auto;margin:8px 0";m.appendChild(box);const cbs=[];
+ rows.forEach(x=>{const r=el("label","rowc"),c=document.createElement("input");c.type="checkbox";c.checked=true;c.style.width="auto";cbs.push(c);r.appendChild(c);r.appendChild(el("span","",x.title));
+  if(x.have)r.appendChild(el("small","","already there, mark finished"));
+  else{const lb=()=>x.done?"finished":"to "+(sec==="book"?"read":"watch"),tg=el("button","b",lb());tg.style.cssText="margin-left:auto;padding:2px 10px;font-size:12px";tg.onclick=e=>{e.preventDefault();x.done=!x.done;tg.textContent=lb()};r.appendChild(tg)}
+  box.appendChild(r)});
+ const add=el("button","b pri","Add selected"),back=el("button","b","Back");add.style.marginRight="8px";back.onclick=pasteUI;m.appendChild(add);m.appendChild(back);
+ add.onclick=()=>{let n=0,u=0;rows.forEach((x,i)=>{if(!cbs[i].checked)return;
+   if(x.have){x.have.done=true;u++;return}
+   items.push({id:"p"+Date.now()+"_"+i,type:sec,title:x.title,creator:x.creator,year:"",category:TYPES[sec].cat,genre:"",length:"",rating:0,summary:"",done:x.done,note:null,fix:true});n++});
+  save();$("ov").hidden=true;setType(sec);$("msg").textContent="Added "+n+" title"+(n===1?"":"s")+(u?", marked "+u+" finished":"")+(n?". Looking up details now…":".");
+  if(n&&!filling)$("fillBtn").click()}}
+$("pasteBtn").onclick=pasteUI;
+let filling=false;
+$("fillBtn").onclick=async()=>{
+ if(filling){filling=false;return}
+ const tp=type,todo=items.filter(i=>i.type===tp&&(!i.summary||!/[.!?…"”)]$/.test(i.summary.trim())||i.mins===undefined||(i.type==="book"&&i.cover===undefined)));
+ if(!todo.length){$("msg").textContent="Nothing to fill in.";return}
+ filling=true;$("fillBtn").textContent="Stop filling";let n=0,got=0,cols=0;
+ for(const it of todo){if(!filling)break;
+  const f=await lookup(it.title+(tp==="book"&&it.creator?" "+it.creator:""),tp);n++;
+  if(it.fix&&f){if(f.title&&sim(f.title,it.title)>=.72)it.title=f.title;delete it.fix}if(f&&f.summary)got++;
+  if(f){["creator","year","length","genre","rating","summary","cover"].forEach(k=>{if(f[k])it[k]=f[k]});if(it.cover===undefined)it.cover="";
+  if(tp==="book"&&f.cover&&(!it.color||it.fromCover)){const c=await coverColor(f.cover);if(c){it.color=c;it.fromCover=true;cols++}}if(f.mins||it.mins===undefined)it.mins=f.mins||0;save()}
+  $("msg").textContent="Filling details: "+n+" of "+todo.length+". Keep this tab open.";
+  if(n%5===0)render();
+  await new Promise(r=>setTimeout(r,1100))}
+ filling=false;$("fillBtn").textContent="Fill missing details";render();$("msg").textContent="Finished. Found descriptions for "+got+" of "+todo.length+" titles."+(tp==="book"?" Cover colours matched for "+cols+" books.":"")+" Anything not found online can be added with Edit details.";};
+let rt;window.addEventListener("resize",()=>{clearTimeout(rt);rt=setTimeout(render,200)});
+setType("book");
+</script></body></html>
